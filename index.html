@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>design-md-mcp</title>
+<meta name="description" content="An MCP server that gives your AI agent your design system: tokens, components and rules from any DESIGN.md, a few lines at a time.">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="examples/tidepool/tokens.css">
+<script src="examples/tidepool/icons.js" defer></script>
+<style>
+  /* Landing page frame. Components come from the Tidepool demo design system (examples/tidepool). */
+  html, body { overflow-x: clip; }
+  body { margin: 0; }
+  a { color: inherit; }
+  a.btn, a.chip { text-decoration: none; }
+  .row { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: center; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 var(--s-4); }
+  .nav { position: sticky; top: 0; z-index: 20; backdrop-filter: blur(14px); background: color-mix(in srgb, var(--bg) 78%, transparent);
+    border-bottom: 1px solid var(--line); }
+  .nav .wrap { display: flex; align-items: center; gap: var(--s-6); height: 64px; }
+  .logo { display: inline-flex; align-items: center; gap: var(--s-2); font: 700 16px/1 var(--font); text-decoration: none; }
+  .nav-links { display: flex; gap: var(--s-6); margin-left: auto; font: 600 14px/1 var(--font); color: var(--ink-2); }
+  .nav-links a { text-decoration: none; } .nav-links a:hover { color: var(--ink); }
+  .nav .chip { cursor: pointer; }
+
+  section { padding: 88px 0 0; }
+  .eyebrow { display: inline-flex; align-items: center; gap: var(--s-2); font: 700 12px/1 var(--font); letter-spacing: .6px; text-transform: uppercase; color: var(--copilot); margin-bottom: var(--s-3); }
+  .eyebrow .icon { width: 14px; height: 14px; }
+  h2.big { font: 700 40px/1.1 var(--font); letter-spacing: -.8px; margin: 0 0 var(--s-3); }
+  .sub { font: 500 17px/1.6 var(--font); color: var(--ink-2); max-width: 620px; margin: 0; }
+
+  /* hero */
+  .hero { position: relative; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: var(--s-6); align-items: center; min-height: 600px; padding-top: var(--s-8); }
+  .hero::before { content: ""; position: absolute; inset: -120px -40vw -40px; z-index: -1;
+    background: radial-gradient(560px 380px at 74% 44%, color-mix(in srgb, var(--copilot) 24%, transparent), transparent 70%),
+                radial-gradient(420px 300px at 90% 74%, color-mix(in srgb, var(--primary) 18%, transparent), transparent 70%); }
+  .hero h1 { font: 700 62px/1.03 var(--font); letter-spacing: -1.6px; margin: var(--s-4) 0; }
+  .hero h1 em { font-style: normal; color: var(--copilot); }
+  .hero .sub { font-size: 19px; margin-bottom: var(--s-6); }
+  .stage { position: relative; height: 520px; }
+  #tide { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .float-chip { position: absolute; display: inline-flex; align-items: center; gap: var(--s-2); padding: 10px 14px; border-radius: var(--r-full);
+    background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow-float); font: 600 13px/1 var(--font); }
+  .float-chip code { font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--copilot); }
+  .float-chip .icon { width: 16px; height: 16px; }
+  .float-chip.a { top: 8%; left: 0; } .float-chip.b { bottom: 3%; right: 0; } .float-chip.c { bottom: 3%; left: 0; }
+
+  /* code */
+  /* Long one-line commands scroll inside their box instead of stretching the layout. */
+  .hero > *, .panel > *, .numbered > div > *, .cmd { min-width: 0; }
+  .cmd { display: flex; align-items: center; gap: var(--s-3); background: var(--surface-sunken); border: 1px solid var(--line); border-radius: var(--r-md);
+    padding: 10px 10px 10px 16px; font: 500 13.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink); max-width: 100%; }
+  .cmd code { flex: 1; min-width: 0; overflow-x: auto; white-space: pre; scrollbar-width: thin; }
+  .cmd .p { color: var(--ink-3); user-select: none; }
+  pre.cmd { display: block; position: relative; margin: 0; padding: 16px 52px 16px 16px; overflow-x: auto; white-space: pre; }
+  pre.cmd .copy { position: absolute; top: 10px; right: 10px; }
+  .copy { height: 32px; width: 32px; border-radius: var(--r-sm); border: 0; background: var(--surface); color: var(--ink-2); display: grid; place-items: center; cursor: pointer; flex: none; }
+  .copy:hover { color: var(--ink); } .copy.done { color: var(--success); }
+  .copy .icon { width: 16px; height: 16px; }
+  .k { color: var(--copilot); } .s { color: var(--success); }
+
+
+  /* install */
+  .install { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: var(--s-6); margin-top: var(--s-8); align-items: start; }
+  .path { display: grid; gap: var(--s-2); }
+  .path button { display: flex; gap: var(--s-3); align-items: flex-start; text-align: left; padding: var(--s-4); border-radius: var(--r-lg);
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; font: inherit; }
+  .path button[aria-selected="true"] { border-color: var(--copilot); box-shadow: 0 0 0 3px var(--copilot-soft); }
+  .path b { display: block; font: 700 15px/1.3 var(--font); }
+  .path span.t-small { display: block; margin-top: 2px; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-xl); padding: var(--s-6); display: grid; gap: var(--s-4); min-width: 0; }
+  .tabs { display: flex; gap: var(--s-2); flex-wrap: wrap; }
+  .tabs .chip { cursor: pointer; }
+  .numbered { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: var(--s-3); align-items: start; }
+  .numbered .dot { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--primary-soft); color: var(--primary); font: 700 13px/1 var(--font); }
+  .numbered > div { display: grid; gap: var(--s-2); min-width: 0; }
+  [hidden] { display: none !important; }
+  .avatar.you { width: 28px; height: 28px; font-size: 10px; }
+  .prompt { background: var(--surface-sunken); border: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) var(--r-lg) var(--r-sm);
+    padding: var(--s-3) var(--s-4); font: 500 14px/1.45 var(--font); }
+
+  /* tools */
+  .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--s-4); margin-top: var(--s-8); }
+  .tool { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--s-4); display: grid; gap: var(--s-2); align-content: start; }
+  .tool .top { display: flex; align-items: center; gap: var(--s-3); }
+  .tool code { font: 700 14px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .tool .ask { font: 500 13px/1.45 var(--font); color: var(--copilot); }
+  .tool .foot { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-2); margin-top: 2px; }
+  .size { font: 600 11px/1 var(--font); padding: 5px 8px; border-radius: var(--r-full); background: var(--surface-sunken); color: var(--ink-2); white-space: nowrap; }
+  .size .tk { font-weight: 500; color: var(--ink-3); }
+  .dev-note { font: 500 13px/1.5 var(--font); color: var(--ink-3); margin: var(--s-2) 0 0; }
+  .tool.star { border-color: var(--copilot); background: linear-gradient(180deg, var(--copilot-soft), var(--surface) 70%); }
+
+  /* tidepool */
+  .phones { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: var(--s-6); justify-items: center; margin-top: var(--s-8); }
+  .phone { position: relative; width: 350px; max-width: 100%; height: 700px; border-radius: 40px; overflow: hidden; background: var(--bg);
+    border: 8px solid #0B0F0E; box-shadow: 0 40px 80px -40px rgba(0,0,0,.6); }
+  .phone .screen { padding: 20px var(--s-4); display: grid; gap: var(--s-4); }
+  .pstatus { display: flex; justify-content: space-between; font: 700 13px/1 var(--font); padding: 0 6px; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; }
+  .dao { display: inline-flex; align-items: center; gap: var(--s-2); font: 700 15px/1 var(--font); }
+  .dao .coin { width: 28px; height: 28px; font-size: 11px; }
+  .bal { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--s-4); display: grid; gap: var(--s-2); }
+  .delta { display: inline-flex; align-items: center; gap: 4px; color: var(--success); font: 600 13px/1 var(--font); }
+  .delta .icon { width: 14px; height: 14px; }
+  .suggest { display: flex; gap: var(--s-3); align-items: flex-start; }
+  .suggest + .suggest { border-top: 1px solid var(--line); padding-top: var(--s-3); }
+  .mini { height: 32px; padding: 0 12px; font-size: 13px; border-radius: var(--r-sm); margin-top: var(--s-2); }
+  .tabbar { position: absolute; left: 12px; right: 12px; bottom: 12px; height: 60px; border-radius: 20px; background: var(--surface);
+    border: 1px solid var(--line); display: flex; justify-content: space-around; align-items: center; color: var(--ink-3); }
+  .tabbar .on { color: var(--primary); }
+  .sheet .head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--s-3); }
+  .amount-hero { display: flex; align-items: center; gap: var(--s-3); margin: var(--s-4) 0 var(--s-2); }
+  .amount-hero .coin { width: 44px; height: 44px; font-size: 13px; }
+  .kv .icon { width: 16px; height: 16px; margin-right: 6px; vertical-align: -3px; color: var(--ink-3); }
+
+  footer { margin-top: 112px; border-top: 1px solid var(--line); }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: var(--s-4); justify-content: center; align-items: center; padding: var(--s-6) var(--s-4); color: var(--ink-2); font: 500 13px/1.4 var(--font); }
+
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+    .float-chip { display: none; }
+    .hero h1 { font-size: 42px; }
+    .stage { height: 380px; }
+    .install { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    h2.big { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <a class="logo" href="#top"><img src="logo.svg" alt="" width="32" height="32">design-md-mcp</a>
+    <div class="nav-links">
+      
+      <a href="https://github.com/tingowiggle/design-md-mcp">GitHub</a>
+    </div>
+    <button class="chip" id="theme" type="button">Light mode</button>
+  </div>
+</nav>
+
+<main class="wrap" id="top">
+  <!-- HERO -->
+  <header class="hero">
+    <div>
+      <span class="eyebrow"><svg class="icon fill"><use href="#i-spark"/></svg>MCP server · open source</span>
+      <h1>Give your AI agent <em>your</em> design system.</h1>
+      <p class="sub">design-md-mcp reads any <b>DESIGN.md</b> and answers your agent in a few lines: the exact token, the component class to reuse, the rule not to break. On-system UI, without pasting the whole spec into every prompt.</p>
+      <div class="cmd" style="margin-bottom:16px">
+        <span class="p">$</span><code id="hero-cmd">claude mcp add tidepool -- npx -y github:tingowiggle/design-md-mcp --example tidepool</code>
+        <button class="copy" data-copy="hero-cmd" type="button" aria-label="Copy command"><svg class="icon"><use href="#i-copy"/></svg></button>
+      </div>
+      <div class="row">
+        <a class="btn btn-primary" href="#install"><svg class="icon"><use href="#i-check"/></svg>Install guide</a>
+        <a class="btn btn-copilot" href="#tidepool"><svg class="icon fill"><use href="#i-spark"/></svg>Meet Tidepool</a>
+      </div>
+    </div>
+    <div class="stage">
+      <canvas id="tide" aria-label="Tide, the Tidepool demo copilot, a 3D character with orbiting coins"></canvas>
+      <span class="float-chip a"><span class="icon-tile copilot" style="width:24px;height:24px;border-radius:50%"><svg class="icon fill"><use href="#i-spark"/></svg></span><code>get_screen_kit</code> "approve sheet"</span>
+      <span class="float-chip b"><svg class="icon" style="color:var(--success)"><use href="#i-check"/></svg>reuse <code>.sheet</code> · <code>.btn-primary</code></span>
+      <span class="float-chip c"><svg class="icon" style="color:var(--warning)"><use href="#i-alert"/></svg><code>#0F7B6D</code> → use <code>var(--primary)</code></span>
+    </div>
+  </header>
+
+  <!-- INSTALL -->
+  <section id="install">
+    <span class="eyebrow"><svg class="icon"><use href="#i-check"/></svg>Install</span>
+    <h2 class="big">Set up in a minute.</h2>
+    <p class="sub">Needs Node 18+. Works with any MCP client: Claude Code, Cursor, Windsurf, Claude Desktop, VS Code and more.</p>
+
+    <div class="install">
+      <div class="path" role="tablist" aria-label="Choose a path">
+        <button role="tab" aria-selected="true" data-path="tidepool" type="button">
+          <span class="copilot-avatar sm"></span>
+          <span><b>Try the Tidepool style</b><span class="t-small">Build in the demo design system: copilot, 3D Tide, light + dark.</span></span>
+        </button>
+        <button role="tab" aria-selected="false" data-path="own" type="button">
+          <span class="icon-tile" style="width:28px;height:28px"><svg class="icon" style="width:16px;height:16px"><use href="#i-wallet"/></svg></span>
+          <span><b>Use your own DESIGN.md</b><span class="t-small">Connect any design system you already have.</span></span>
+        </button>
+      </div>
+
+      <div class="panel">
+        <div class="tabs" role="tablist" aria-label="Client">
+          <button class="chip on" data-client="claude" type="button">Claude Code</button>
+          <button class="chip" data-client="json" type="button">Cursor, Windsurf &amp; others</button>
+        </div>
+
+        <!-- Tidepool -->
+        <div data-show="tidepool">
+          <div class="numbered">
+            <span class="dot">1</span>
+            <div>
+              <span class="t-heading">Copy the Tidepool files into your project</span>
+              <span class="t-small">You get <code>DESIGN.md</code>, <code>tokens.css</code>, <code>icons.js</code> and <code>tide.js</code> in <code>./tidepool</code>.</span>
+              <div class="cmd"><span class="p">$</span><code id="c-init">npx -y github:tingowiggle/design-md-mcp init tidepool</code><button class="copy" data-copy="c-init" type="button" aria-label="Copy"><svg class="icon"><use href="#i-copy"/></svg></button></div>
+            </div>
+          </div>
+          <div class="numbered" style="margin-top:20px">
+            <span class="dot">2</span>
+            <div>
+              <span class="t-heading">Connect the MCP server</span>
+              <div data-client-show="claude" class="cmd"><span class="p">$</span><code id="c-tp-claude">claude mcp add tidepool -- npx -y github:tingowiggle/design-md-mcp --file ./tidepool/DESIGN.md</code><button class="copy" data-copy="c-tp-claude" type="button" aria-label="Copy"><svg class="icon"><use href="#i-copy"/></svg></button></div>
+              <pre data-client-show="json" class="cmd" hidden><code id="c-tp-json">{
+  <span class="k">"mcpServers"</span>: {
+    <span class="k">"tidepool"</span>: {
+      <span class="k">"command"</span>: <span class="s">"npx"</span>,
+      <span class="k">"args"</span>: [<span class="s">"-y"</span>, <span class="s">"github:tingowiggle/design-md-mcp"</span>,
+               <span class="s">"--file"</span>, <span class="s">"./tidepool/DESIGN.md"</span>]
+    }
+  }
+}</code><button class="copy" data-copy="c-tp-json" type="button" aria-label="Copy"><svg class="icon"><use href="#i-copy"/></svg></button></pre>
+              <span class="t-small" data-client-show="json" hidden>Add to your client's MCP config (e.g. <code>.cursor/mcp.json</code>), then restart it.</span>
+            </div>
+          </div>
+          <div class="numbered" style="margin-top:20px">
+            <span class="dot">3</span>
+            <div>
+              <span class="t-heading">Ask your agent</span>
+              <div class="agent-line"><span class="avatar you">You</span><div class="prompt">"Build a proposal voting screen in the Tidepool style, light and dark. Start with <b>get_screen_kit</b>."</div></div>
+              <div class="agent-line"><span class="avatar you">You</span><div class="prompt">"Add the 3D Tide to the empty state of the activity tab."</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Own DESIGN.md -->
+        <div data-show="own" hidden>
+          <div class="numbered">
+            <span class="dot">1</span>
+            <div>
+              <span class="t-heading">Have a DESIGN.md</span>
+              <span class="t-small">YAML tokens between <code>---</code> fences (colors, typography, rounded, spacing, components), then markdown sections with your rules. Optional extras next to it: <code>tokens.css</code> (CSS variables + component classes) and <code>showcase.html</code> (markup examples).</span>
+            </div>
+          </div>
+          <div class="numbered" style="margin-top:20px">
+            <span class="dot">2</span>
+            <div>
+              <span class="t-heading">Connect the MCP server</span>
+              <div data-client-show="claude" class="cmd"><span class="p">$</span><code id="c-own-claude">claude mcp add my-design -- npx -y github:tingowiggle/design-md-mcp --file ./DESIGN.md</code><button class="copy" data-copy="c-own-claude" type="button" aria-label="Copy"><svg class="icon"><use href="#i-copy"/></svg></button></div>
+              <pre data-client-show="json" class="cmd" hidden><code id="c-own-json">{
+  <span class="k">"mcpServers"</span>: {
+    <span class="k">"my-design"</span>: {
+      <span class="k">"command"</span>: <span class="s">"npx"</span>,
+      <span class="k">"args"</span>: [<span class="s">"-y"</span>, <span class="s">"github:tingowiggle/design-md-mcp"</span>,
+               <span class="s">"--file"</span>, <span class="s">"./DESIGN.md"</span>,
+               <span class="s">"--css"</span>, <span class="s">"./src/styles/tokens.css"</span>]
+    }
+  }
+}</code><button class="copy" data-copy="c-own-json" type="button" aria-label="Copy"><svg class="icon"><use href="#i-copy"/></svg></button></pre>
+              <span class="t-small">Options: <code>--css</code> stylesheet(s) · <code>--examples</code> HTML that uses your components · <code>--docs</code> extra rule files · <code>--scope .app</code> if tokens live on a class.</span>
+            </div>
+          </div>
+          <div class="numbered" style="margin-top:20px">
+            <span class="dot">3</span>
+            <div>
+              <span class="t-heading">Ask your agent</span>
+              <div class="agent-line"><span class="avatar you">You</span><div class="prompt">"Build the settings page with our design system. Use <b>get_screen_kit</b> first and reuse existing classes."</div></div>
+              <div class="agent-line"><span class="avatar you">You</span><div class="prompt">"Run <b>check_value</b> on every hex and px in this file and replace them with tokens."</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOOLS -->
+  <section id="tools">
+    <span class="eyebrow"><svg class="icon fill"><use href="#i-spark"/></svg>Tools</span>
+    <h2 class="big">Seven tools your agent can call.</h2>
+    <p class="sub">Your agent asks a small question and gets a short answer: a couple of lines for a colour, about a page of text to set up a whole screen. Without it, the agent reads the entire design system, about 10 pages, every time.</p>
+    <p class="dev-note">For developers: ~800 tokens to load the tools, 50–650 tokens per answer, vs ~6,300 for the full Tidepool files.</p>
+    <div class="tools">
+      <div class="tool star"><div class="top"><span class="icon-tile copilot"><svg class="icon fill"><use href="#i-spark"/></svg></span><code>get_screen_kit</code></div><span class="t-small">Start here. Setup, every reusable class, the most relevant components with markup, and the must-follow rules, in one call.</span><div class="foot"><span class="ask">"approve payment sheet"</span><span class="size">about a page <span class="tk">(~650 tokens)</span></span></div></div>
+      <div class="tool"><div class="top"><span class="icon-tile"><svg class="icon"><use href="#i-wallet"/></svg></span><code>get_component</code></div><span class="t-small">The class to reuse, a real markup example, resolved spec values and written rules.</span><div class="foot"><span class="ask">"bottom-sheet" → use .sheet</span><span class="size">a short paragraph <span class="tk">(~170 tokens)</span></span></div></div>
+      <div class="tool"><div class="top"><span class="icon-tile"><svg class="icon"><use href="#i-vote"/></svg></span><code>get_token</code></div><span class="t-small">Exact value, light and dark, the CSS variable, and where to use it.</span><div class="foot"><span class="ask">"primary" → var(--primary)</span><span class="size">2–3 lines <span class="tk">(~80 tokens)</span></span></div></div>
+      <div class="tool"><div class="top"><span class="icon-tile"><svg class="icon"><use href="#i-list"/></svg></span><code>find_token</code></div><span class="t-small">Plain-words search for the right token or component.</span><div class="foot"><span class="ask">"rejected status"</span><span class="size">2–3 lines <span class="tk">(~90 tokens)</span></span></div></div>
+      <div class="tool"><div class="top"><span class="icon-tile warning"><svg class="icon"><use href="#i-alert"/></svg></span><code>check_value</code></div><span class="t-small">Is this hex or px in the system? If not, the nearest tokens.</span><div class="foot"><span class="ask">"#0F7B6D" → var(--primary)</span><span class="size">2–3 lines <span class="tk">(~55 tokens)</span></span></div></div>
+      <div class="tool"><div class="top"><span class="icon-tile success"><svg class="icon"><use href="#i-shield"/></svg></span><code>get_rules</code></div><span class="t-small">One rule section by topic: colour rules, typography, do's and don'ts.</span><div class="foot"><span class="ask">"colour rules"</span><span class="size">a short paragraph <span class="tk">(~120 tokens)</span></span></div></div>
+      <div class="tool"><div class="top"><span class="icon-tile"><svg class="icon"><use href="#i-users"/></svg></span><code>ds_overview</code></div><span class="t-small">Every token and component name, no values. A cheap map of the system.</span><div class="foot"><span class="ask">orient first</span><span class="size">half a page <span class="tk">(~420 tokens)</span></span></div></div>
+    </div>
+  </section>
+
+  <!-- TIDEPOOL -->
+  <section id="tidepool">
+    <span class="eyebrow"><svg class="icon fill"><use href="#i-spark"/></svg>Demo design system</span>
+    <h2 class="big">Tidepool: a treasury with a copilot.</h2>
+    <p class="sub">A fictional community wallet, bundled as a complete example. Teal means a person confirmed it, and violet means the copilot suggested it. Every screen below is built only from Tidepool's DESIGN.md, tokens and components.</p>
+
+    <div class="phones">
+      <div class="phone">
+        <div class="screen">
+          <div class="pstatus"><span>9:41</span><span>●●●</span></div>
+          <div class="topbar"><span class="dao"><span class="coin">TP</span>Harbor Collective</span><span class="avatar">MI</span></div>
+          <div class="bal">
+            <span class="t-label">Treasury</span>
+            <div class="t-display">63,080.<span style="color:var(--ink-2)">00</span> <span class="code" style="font-size:16px;letter-spacing:0">USDC</span></div>
+            <span class="delta"><svg class="icon"><use href="#i-up"/></svg>+4.2% this month · 18 members</span>
+          </div>
+          <div class="agent-line"><span class="copilot-avatar"></span><div class="bubble-copilot">Morning, Mia. <b>2 things</b> need you before the 5pm cut-off.</div></div>
+          <div class="card" style="display:grid;gap:12px">
+            <div class="suggest">
+              <span class="icon-tile warning"><svg class="icon"><use href="#i-alert"/></svg></span>
+              <div style="flex:1"><div class="t-body" style="font-weight:600">Invoice is 3× larger than usual</div><div class="t-small">studio.eth asked 1,250 USDC. Their last two were ~400.</div>
+                <button class="btn btn-copilot mini" type="button"><svg class="icon"><use href="#i-split"/></svg>Split into milestones</button></div>
+            </div>
+            <div class="suggest">
+              <span class="icon-tile"><svg class="icon"><use href="#i-vote"/></svg></span>
+              <div style="flex:1"><div class="t-body" style="font-weight:600">Your vote closes in 2h</div><div class="t-small">Design sprint · 64% yes so far</div></div>
+              <span class="badge badge-warning">Voting</span>
+            </div>
+          </div>
+        </div>
+        <nav class="tabbar"><svg class="icon on"><use href="#i-home"/></svg><svg class="icon"><use href="#i-list"/></svg><span class="copilot-avatar" style="--size:44px"></span><svg class="icon"><use href="#i-users"/></svg><svg class="icon"><use href="#i-wallet"/></svg></nav>
+      </div>
+
+      <div class="phone">
+        <div class="screen">
+          <div class="pstatus"><span>9:41</span><span>●●●</span></div>
+          <div class="topbar"><span class="dao"><span class="coin">TP</span>Harbor Collective</span><span class="avatar">MI</span></div>
+          <div class="bal"><span class="t-label">Treasury</span><div class="t-display">63,080.<span style="color:var(--ink-2)">00</span></div></div>
+        </div>
+        <div class="scrim"></div>
+        <div class="sheet">
+          <div class="head"><div><div class="t-title">Approve payment</div><div class="t-small" style="margin-top:2px">Proposal #42 · Design sprint</div></div><span class="badge badge-success">Passed</span></div>
+          <div class="amount-hero"><span class="coin">US</span><div class="t-display" style="font-size:34px">1,250.<span style="color:var(--ink-2)">00</span> <span class="code" style="font-size:15px;letter-spacing:0">USDC</span></div></div>
+          <div class="kv"><span><svg class="icon"><use href="#i-send"/></svg>To</span><span>studio.eth</span></div>
+          <div class="kv"><span><svg class="icon"><use href="#i-clock"/></svg>Network fee</span><span class="num">0.42 <span class="code">USDC</span></span></div>
+          <div class="agent-line" style="margin-top:12px"><span class="copilot-avatar sm"></span><div class="bubble-copilot"><span class="copilot-label" style="margin:0 0 4px"><svg class="icon fill"><use href="#i-spark"/></svg>Tide checked</span><br>Recipient matches 6 past payments. Fee is normal.</div></div>
+          <div class="timeline" style="margin-top:16px">
+            <div class="tl-step copilot"><span class="tl-dot"><svg class="icon fill"><use href="#i-spark"/></svg></span>Drafted by Tide · Mon</div>
+            <div class="tl-step done"><span class="tl-dot"><svg class="icon"><use href="#i-check"/></svg></span>Members voted · 64% yes</div>
+            <div class="tl-step now"><span class="tl-dot"><svg class="icon"><use href="#i-wallet"/></svg></span>You approve</div>
+          </div>
+          <div class="sheet-actions"><button class="btn btn-secondary" type="button">Cancel</button><button class="btn btn-primary" type="button"><svg class="icon"><use href="#i-check"/></svg>Approve</button></div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>design-md-mcp · Apache-2.0 · made by Web3 Story Lab</span>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="examples/tidepool/tide.js"></script>
+<script>
+  // Theme: dark by default; ?theme=light opens light.
+  const root = document.documentElement;
+  if (new URLSearchParams(location.search).get("theme") === "light") root.dataset.theme = "light";
+  const toggle = document.getElementById("theme");
+  const syncLabel = () => (toggle.textContent = root.dataset.theme === "dark" ? "Light mode" : "Dark mode");
+  syncLabel();
+  toggle.addEventListener("click", () => { root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark"; syncLabel(); });
+
+  mountTide(document.getElementById("tide"));
+
+  // Install guide: path (Tidepool / own) × client (Claude Code / JSON).
+  let client = "claude";
+  document.querySelectorAll("[data-path]").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll("[data-path]").forEach((x) => x.setAttribute("aria-selected", x === b));
+    document.querySelectorAll("[data-show]").forEach((p) => (p.hidden = p.dataset.show !== b.dataset.path));
+  }));
+  document.querySelectorAll("[data-client]").forEach((b) => b.addEventListener("click", () => {
+    client = b.dataset.client;
+    document.querySelectorAll("[data-client]").forEach((x) => x.classList.toggle("on", x === b));
+    document.querySelectorAll("[data-client-show]").forEach((el) => (el.hidden = el.dataset.clientShow !== client));
+  }));
+
+  // Copy buttons
+  document.querySelectorAll(".copy").forEach((b) => b.addEventListener("click", async () => {
+    const text = document.getElementById(b.dataset.copy).innerText;
+    try { await navigator.clipboard.writeText(text); b.classList.add("done"); setTimeout(() => b.classList.remove("done"), 1200); } catch {}
+  }));
+</script>
+</body>
+</html>

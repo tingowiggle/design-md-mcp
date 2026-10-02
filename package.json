@@ -1,0 +1,47 @@
+{
+  "name": "design-md-mcp",
+  "version": "0.1.0",
+  "description": "MCP server that lets AI agents query a DESIGN.md (tokens, components, rules) instead of reading the whole file.",
+  "type": "module",
+  "bin": {
+    "design-md-mcp": "src/server.js"
+  },
+  "main": "src/server.js",
+  "files": [
+    "src/server.js",
+    "src/ds.js",
+    "src/cli.js",
+    "examples/",
+    "logo.svg"
+  ],
+  "scripts": {
+    "start": "node src/server.js",
+    "smoke": "node src/smoke.js"
+  },
+  "keywords": [
+    "mcp",
+    "design.md",
+    "design-tokens",
+    "design-system",
+    "ai-agents",
+    "claude"
+  ],
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.31.0",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tingowiggle/design-md-mcp.git"
+  },
+  "homepage": "https://github.com/tingowiggle/design-md-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/tingowiggle/design-md-mcp/issues"
+  },
+  "author": "Web3 Story Lab"
+}

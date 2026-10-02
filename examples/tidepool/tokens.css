@@ -1,0 +1,196 @@
+/* ==========================================================================
+   Tidepool — tokens + components (demo design system for design-md-mcp)
+   Light on :root, dark on [data-theme="dark"]. Spec: DESIGN.md
+   ========================================================================== */
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&display=swap");
+
+:root {
+  --bg: #F6F4EF;
+  --surface: #FFFFFF;
+  --surface-sunken: #EFECE5;
+  --ink: #10221F;
+  --ink-2: #5C6966;
+  --ink-3: #8F9996;
+  --line: #E2E0DA;
+  --primary: #0F7B6C;
+  --on-primary: #FFFFFF;
+  --primary-soft: #EAF4F1;
+  --copilot: #5B3EF0;
+  --copilot-soft: #EEEAFF;
+  --copilot-hi: #B9A8FF;
+  --copilot-deep: #2E1F9E;
+  --success: #177A4C;
+  --success-soft: #E3F0EA;
+  --warning: #9A5B00;
+  --warning-soft: #F3EBDD;
+  --danger: #B42F26;
+  --danger-soft: #F8E5E3;
+  --scrim: rgba(16,34,31,.40);
+  --shadow-float: 0 12px 32px -12px rgba(16,34,31,.28);
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+  --r-full: 9999px;
+
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-12: 48px;
+
+  --font: "Manrope", system-ui, -apple-system, sans-serif;
+  --dur-ui: 200ms;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+}
+
+[data-theme="dark"] {
+  --bg: #0F1514;
+  --surface: #172120;
+  --surface-sunken: #0B100F;
+  --ink: #EEF3F1;
+  --ink-2: #A3AFAC;
+  --ink-3: #6C7875;
+  --line: #26322F;
+  --primary: #3FBFA8;
+  --on-primary: #06201C;
+  --primary-soft: #183A35;
+  --copilot: #9C88FF;
+  --copilot-soft: #2A2550;
+  --copilot-hi: #D6CCFF;
+  --copilot-deep: #3A2CB8;
+  --success: #4CC38A;
+  --success-soft: #173327;
+  --warning: #F0B54A;
+  --warning-soft: #3A2E17;
+  --danger: #FF7A6E;
+  --danger-soft: #3D1F1C;
+  --scrim: rgba(0,0,0,.60);
+  --shadow-float: 0 12px 32px -12px rgba(0,0,0,.6);
+}
+
+body { font-family: var(--font); color: var(--ink); background: var(--bg); }
+
+/* ---------- type ---------- */
+.t-display { font: 700 40px/1.1 var(--font); letter-spacing: -.6px; font-variant-numeric: tabular-nums; color: var(--ink); }
+.t-title   { font: 700 24px/1.2 var(--font); color: var(--ink); }
+.t-heading { font: 600 18px/1.3 var(--font); color: var(--ink); }
+.t-body    { font: 500 15px/1.5 var(--font); color: var(--ink); }
+.t-small   { font: 500 13px/1.45 var(--font); color: var(--ink-2); }
+.t-label   { font: 700 12px/1.3 var(--font); letter-spacing: .4px; text-transform: uppercase; color: var(--ink-2); }
+.num       { font-variant-numeric: tabular-nums; }
+.code      { color: var(--ink-2); font-weight: 600; }
+
+/* ---------- buttons ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); height: 48px; padding: 0 20px;
+  border: 0; border-radius: var(--r-md); font: 600 15px/1 var(--font); cursor: pointer; transition: transform var(--dur-ui) var(--ease); }
+.btn:active { transform: scale(.98); }
+.btn.block { width: 100%; }
+.btn-primary { background: var(--primary); color: var(--on-primary); }
+.btn-primary:disabled { opacity: .4; cursor: default; }
+.btn-secondary { background: var(--surface-sunken); color: var(--ink); }
+.btn-copilot { background: var(--copilot-soft); color: var(--copilot); }
+
+/* ---------- surfaces ---------- */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--s-4); }
+.scrim { position: absolute; inset: 0; background: var(--scrim); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--surface); border-radius: var(--r-xl) var(--r-xl) 0 0;
+  padding: var(--s-6); box-shadow: var(--shadow-float); }
+.sheet::before { content: ""; display: block; width: 36px; height: 4px; border-radius: 2px; background: var(--line); margin: -8px auto var(--s-4); }
+.sheet-actions { display: grid; grid-template-columns: 1fr 1.6fr; gap: var(--s-3); margin-top: var(--s-6); }
+
+/* ---------- rows ---------- */
+.list-row { display: flex; align-items: center; gap: var(--s-3); min-height: 56px; }
+.list-row + .list-row { border-top: 1px solid var(--line); }
+.list-row .grow { flex: 1; min-width: 0; }
+.list-row .value { font: 600 15px/1.2 var(--font); font-variant-numeric: tabular-nums; text-align: right; }
+.avatar { width: 36px; height: 36px; border-radius: var(--r-full); background: var(--primary-soft); color: var(--primary);
+  display: grid; place-items: center; font: 700 13px/1 var(--font); flex: none; }
+.kv { display: flex; justify-content: space-between; gap: var(--s-3); padding: var(--s-2) 0; font: 500 15px/1.4 var(--font); }
+.kv > :first-child { color: var(--ink-2); }
+
+/* ---------- inputs ---------- */
+.input { box-sizing: border-box; width: 100%; height: 48px; padding: 0 var(--s-4); border: 0; border-radius: var(--r-md); background: var(--surface-sunken);
+  color: var(--ink); font: 500 15px/1 var(--font); outline: none; }
+.input::placeholder { color: var(--ink-3); }
+.input:focus { box-shadow: 0 0 0 2px var(--primary-soft); }
+
+/* ---------- chips & badges ---------- */
+.chip { display: inline-flex; align-items: center; gap: var(--s-1); height: 32px; padding: 0 var(--s-3); border-radius: var(--r-full);
+  background: var(--surface-sunken); color: var(--ink); font: 500 13px/1 var(--font); border: 0; }
+.chip.on { background: var(--primary-soft); color: var(--primary); }
+.badge { display: inline-flex; align-items: center; height: 22px; padding: 0 var(--s-2); border-radius: var(--r-full);
+  font: 700 12px/1 var(--font); letter-spacing: .4px; text-transform: uppercase; }
+.badge-success { background: var(--success-soft); color: var(--success); }
+.badge-warning { background: var(--warning-soft); color: var(--warning); }
+.badge-danger { background: var(--danger-soft); color: var(--danger); }
+
+/* ---------- copilot ---------- */
+.copilot-card { background: var(--copilot-soft); border-radius: var(--r-lg); padding: var(--s-4); color: var(--ink); }
+.copilot-label { display: inline-flex; align-items: center; gap: var(--s-1); font: 700 12px/1 var(--font); letter-spacing: .4px;
+  text-transform: uppercase; color: var(--copilot); margin-bottom: var(--s-2); }
+.copilot-label svg { width: 14px; height: 14px; }
+
+/* ---------- proposals ---------- */
+.proposal-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--s-4); display: grid; gap: var(--s-3); }
+.proposal-card .amount { font: 700 24px/1.2 var(--font); font-variant-numeric: tabular-nums; }
+.vote-bar { height: 6px; border-radius: var(--r-full); background: var(--surface-sunken); overflow: hidden; display: flex; }
+.vote-bar .yes { background: var(--success); }
+.vote-bar .no { background: var(--danger); }
+
+/* ---------- toast ---------- */
+.toast { display: inline-flex; align-items: center; gap: var(--s-2); padding: var(--s-3) var(--s-4); border-radius: var(--r-md);
+  background: var(--ink); color: var(--surface); font: 600 14px/1.2 var(--font); box-shadow: var(--shadow-float); }
+
+/* ---------- icons ---------- */
+.icon { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.icon.fill { fill: currentColor; stroke: none; }
+.btn .icon { width: 18px; height: 18px; }
+.icon-tile { width: 40px; height: 40px; border-radius: var(--r-md); display: grid; place-items: center; flex: none;
+  background: var(--primary-soft); color: var(--primary); }
+.icon-tile.copilot { background: var(--copilot-soft); color: var(--copilot); }
+.icon-tile.warning { background: var(--warning-soft); color: var(--warning); }
+.icon-tile.danger { background: var(--danger-soft); color: var(--danger); }
+.icon-tile.success { background: var(--success-soft); color: var(--success); }
+
+/* ---------- copilot avatar ---------- */
+/* Tide, flat: a pastel felt orb with calm half-closed eyes behind round glasses (matches tide.js).
+   Sizes: default 40, .sm 28, .lg 64. Any size via --size. */
+.copilot-avatar { --size: 40px; --tide: color-mix(in srgb, var(--copilot) 40%, var(--copilot-hi));
+  width: var(--size); height: var(--size); border-radius: 50%; position: relative; flex: none;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%2314102E' stroke-linecap='round'%3E%3Ccircle cx='15.3' cy='20' r='4.3' stroke-width='.95'/%3E%3Ccircle cx='24.7' cy='20' r='4.3' stroke-width='.95'/%3E%3Cpath d='M18.9 19.4q1.1-1.1 2.2 0M11 19.6l-1.3-.5M29 19.6l1.3-.5' stroke-width='.85'/%3E%3Cpath d='M13.4 20.5q1.9 1.6 3.8 0M22.8 20.5q1.9 1.6 3.8 0' stroke-width='1'/%3E%3C/svg%3E") center / 100% 100% no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.6' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='64' height='64' filter='url(%23n)'/%3E%3C/svg%3E") 0 0 / 32px 32px,
+    radial-gradient(circle at 34% 28%, rgba(255,255,255,.55), transparent 42%),
+    radial-gradient(circle at 50% 40%, var(--tide) 55%, color-mix(in srgb, var(--tide) 78%, var(--copilot-deep)) 100%);
+  background-blend-mode: normal, soft-light, normal, normal;
+  /* soft, fuzzy edge like the felt coat, plus a gentle lift */
+  box-shadow: 0 0 calc(var(--size) * .05) calc(var(--size) * .01) color-mix(in srgb, var(--tide) 70%, transparent),
+              0 calc(var(--size) * .14) calc(var(--size) * .32) calc(var(--size) * -.14) var(--copilot); }
+.copilot-avatar.sm { --size: 28px; }
+.copilot-avatar.lg { --size: 64px; }
+
+/* ---------- coins ---------- */
+.coin { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; flex: none; color: #FFFFFF;
+  font: 700 12px/1 var(--font); background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.45), transparent 46%), var(--coin, var(--primary));
+  box-shadow: inset 0 -3px 0 rgba(16,34,31,.2); }
+.coin.violet { --coin: var(--copilot); }
+.coin.amber { --coin: var(--warning); }
+
+/* ---------- copilot bubble ---------- */
+.bubble-copilot { background: var(--copilot-soft); color: var(--ink); border-radius: var(--r-lg) var(--r-lg) var(--r-lg) var(--r-sm);
+  padding: var(--s-3) var(--s-4); font: 500 14px/1.45 var(--font); }
+.agent-line { display: flex; gap: var(--s-3); align-items: flex-end; }
+
+/* ---------- timeline ---------- */
+.timeline { display: grid; gap: var(--s-3); }
+.tl-step { display: grid; grid-template-columns: 24px 1fr; gap: var(--s-3); align-items: center; font: 500 13px/1.35 var(--font); color: var(--ink-2); }
+.tl-dot { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-sunken); color: var(--ink-2); }
+.tl-dot .icon { width: 14px; height: 14px; stroke-width: 2.2; }
+.tl-step.done .tl-dot { background: var(--success-soft); color: var(--success); }
+.tl-step.copilot .tl-dot { background: var(--copilot-soft); color: var(--copilot); }
+.tl-step.now { color: var(--ink); font-weight: 700; }
+.tl-step.now .tl-dot { background: var(--primary); color: var(--on-primary); }

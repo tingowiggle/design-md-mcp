@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="design-md-mcp: Tide">
+  <title>design-md-mcp</title>
+  <defs>
+    <radialGradient id="body" cx="50%" cy="40%" r="60%">
+      <stop offset="0.55" stop-color="#937EF9"/>
+      <stop offset="1" stop-color="#7563E0"/>
+    </radialGradient>
+    <radialGradient id="shine" cx="34%" cy="28%" r="40%">
+      <stop offset="0" stop-color="#fff" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="felt" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="2" seed="3" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/>
+    </filter>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="1.8" numOctaves="2"/><feColorMatrix values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .35 0"/></filter>
+    <clipPath id="clip"><ellipse cx="32" cy="33" rx="28" ry="25"/></clipPath>
+  </defs>
+  <g filter="url(#felt)">
+    <ellipse cx="32" cy="33" rx="28" ry="25" fill="url(#body)"/>
+    <rect width="64" height="64" filter="url(#grain)" clip-path="url(#clip)" opacity=".5"/>
+    <ellipse cx="32" cy="33" rx="28" ry="25" fill="url(#shine)"/>
+  </g>
+  <g fill="none" stroke="#14102E" stroke-linecap="round">
+    <circle cx="25.2" cy="32" r="5.8" stroke-width="1.8"/>
+    <circle cx="38.8" cy="32" r="5.8" stroke-width="1.8"/>
+    <path d="M30.4 31.2q1.6-1.6 3.2 0M19.6 31.4l-2-.7M44.4 31.4l2-.7" stroke-width="1.6"/>
+    <path d="M22.4 32.8q2.8 2.4 5.6 0M36 32.8q2.8 2.4 5.6 0" stroke-width="1.8"/>
+  </g>
+</svg>
